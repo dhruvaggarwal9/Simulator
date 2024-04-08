@@ -1,37 +1,6 @@
-r0 = 0
-r1 = 0
-r2 = 0
-r3 = 0
-r4 = 0
-r5 = 0
-r6 = 0
-r7 = 0
-r8 = 0
-r9 = 0
-r10 = 0
-r11 = 0
-r12 = 0
-r13 = 0
-r14 = 0
-r15 = 0
-r16 = 0
-r17 = 0
-r18 = 0
-r19 = 0
-r20 = 0
-r21 = 0
-r22 = 0
-r23 = 0
-r24 = 0
-r25 = 0
-r26 = 0
-r27 = 0
-r28 = 0
-r29 = 0
-r30 = 0
-r31 = 0
+registers = [['zero', '0b00000000000000000000000000000000', 0], ['ra', '0b00000000000000000000000000000001', 0], ['sp', '0b00000000000000000000000000000010', 0], ['gp', '0b00000000000000000000000000000011', 0], ['tp', '0b00000000000000000000000000000100', 0], ['t0', '0b00000000000000000000000000000101', 0], ['t1', '0b00000000000000000000000000000110', 0], ['t2', '0b00000000000000000000000000000111', 0], ['s0', '0b00000000000000000000000000001000', 0], ['s1', '0b00000000000000000000000000001001', 0], ['a0', '0b00000000000000000000000000001010', 0], ['a1', '0b00000000000000000000000000001011', 0], ['a2', '0b00000000000000000000000000001100', 0], ['a3', '0b00000000000000000000000000001101', 0], ['a4', '0b00000000000000000000000000001110', 0], ['a5', '0b00000000000000000000000000001111', 0], ['a6', '0b00000000000000000000000000010000', 0], ['a7', '0b00000000000000000000000000010001', 0], ['s2', '0b00000000000000000000000000010010', 0], ['s3', '0b00000000000000000000000000010011', 0], ['s4', '0b00000000000000000000000000010100', 0], ['s5', '0b00000000000000000000000000010101', 0], ['s6', '0b00000000000000000000000000010110', 0], ['s7', '0b00000000000000000000000000010111', 0], ['s8', '0b00000000000000000000000000011000', 0], ['s9', '0b00000000000000000000000000011001', 0], ['s10', '0b00000000000000000000000000011010', 0], ['s11', '0b00000000000000000000000000011011', 0], ['t3', '0b00000000000000000000000000011100', 0], ['t4', '0b00000000000000000000000000011101', 0], ['t5', '0b00000000000000000000000000011110', 0], ['t6', '0b00000000000000000000000000011111', 0]]
 
-registers = [r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31]
+# registers = {"zero":x0, "ra":r2, "sp":r3, "gp":0, "tp":0, "t0":0, "":0, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31}
 
 def check_inst(line):
     if (line=="00000000000000000010000000000000"):
@@ -100,15 +69,29 @@ def check_inst(line):
 def output(registers):
      binary_representations = []
      for value in registers:
-        if value < 0:
-            binary_value = bin(value & 0xFFFFFFFF)[2:] 
+        if value[2] < 0:
+            binary_value = bin(value[2] & 0xFFFFFFFF)[2:] 
         else:
-            binary_value = bin(value)[2:].zfill(32)
+            binary_value = bin(value[2])[2:].zfill(32)
         binary_representations.append('0b' + binary_value +" ")
      return ''.join(binary_representations)
 
 def detectregister(binary):
     return int(binary, 2)
+
+def decimal_to_two_unsigned_to_decimal(decimal):
+    num_bits=32
+    if decimal >= 0:
+        binary = bin(decimal)[2:].zfill(num_bits)
+    else:
+        positive_binary = bin(abs(decimal))[2:].zfill(num_bits)
+        inverted_binary = ''.join('1' if bit == '0' else '0' for bit in positive_binary)
+        binary = bin(int(inverted_binary, 2) + 1)[2:].zfill(num_bits)
+    print(binary)
+    deci = 0
+    deci = int(binary, 2)
+    
+    return deci
 
 
 def R_Type(line , instruction, registers):
@@ -116,39 +99,59 @@ def R_Type(line , instruction, registers):
      rs1 = line[-20:-15]
      rs2 = line[-25,-20]
      if instruction == "add":
-         registers[detectregister(rd)] = registers[detectregister[rs1]] + registers[detectregister[rs2]] #sext
+         registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] + registers[detectregister[rs2]][2] #sext
      if instruction == "sub":
-         registers[detectregister(rd)] = 0 - registers[detectregister[rs2]]
+         registers[detectregister(rd)][2] = 0 - registers[detectregister[rs2]][2]
      if instruction == "sll":
-         value = registers[detectregister[rs2]]
+         value = registers[detectregister[rs2]][2]
          if value < 0:
             binary_value = bin(value & 0xFFFFFFFF)[2:] 
          else:
             binary_value = bin(value)[2:].zfill(32)
          x = binary_value [-5:]
          y = int(x, 2)
-         result = registers[detectregister[rs1]] << y
-         registers[detectregister[rs1]] = result
+         result = registers[detectregister[rs1]][2] << y
+         registers[detectregister[rs1]][2] = result
      if instruction == "srl":
-         value = registers[detectregister[rs2]]
+         value = registers[detectregister[rs2]][2]
          if value < 0:
             binary_value = bin(value & 0xFFFFFFFF)[2:] 
          else:
             binary_value = bin(value)[2:].zfill(32)
          x = binary_value [-5:]
          y = int(x, 2)
-         result = registers[detectregister[rs1]] >> y
-         registers[detectregister[rs1]] = result
+         result = registers[detectregister[rs1]][2] >> y
+         registers[detectregister[rs1]][2] = result
      if instruction == "slt":
-         if registers[detectregister[rs1]] < registers[detectregister[rs2]]: #sext
-             registers[detectregister[rd]] =1
+         if registers[detectregister[rs1]][2] < registers[detectregister[rs2]][2]: #sext
+             registers[detectregister[rd]][2] =1
      if instruction == "sltu":
-         if registers[detectregister[rs1]] < registers[detectregister[rs2]]:
-             registers[detectregister[rd]] =1
+         if decimal_to_two_unsigned_to_decimal(registers[detectregister[rs1]][2]) < decimal_to_two_unsigned_to_decimal(registers[detectregister[rs2]][2]):
+             registers[detectregister[rd]][2] =1
      if instruction == "xor" :
-         registers[detectregister(rd)] = registers[detectregister[rs1]] ^registers[detectregister[rs2]]
-     if instruction == "xor" :
-         registers[detectregister(rd)] = registers[detectregister[rs1]] | registers[detectregister[rs2]]
-     if instruction == "xor" :
-         registers[detectregister(rd)] = registers[detectregister[rs1]] & registers[detectregister[rs2]]
-         
+         registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] ^registers[detectregister[rs2]][2]
+     if instruction == "or" :
+         registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] | registers[detectregister[rs2]][2]
+     if instruction == "and" :
+         registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] & registers[detectregister[rs2]][2]
+    
+def input():
+    with open("File1.txt","r") as f:
+            data=f.read()
+            line=data.split('\n')
+            for i in range(len(line)):
+                check_insta = check_inst(line)
+                if check_insta[1]=='bonus':
+                    bonus(line[i],check_insta[0],registers)
+                elif check_insta[1]=='r':
+                    R_Type(line[i],check_insta[0],registers)
+                elif check_insta[1]=='i':
+                    I_Type(line[i],check_insta[0],registers)
+                elif check_insta[1]=='s':
+                    S_Type(line[i],check_insta[0],registers)
+                elif check_insta[1]=='b':
+                    B_Type(line[i],check_insta[0],registers)
+                elif check_insta[1]=='u':
+                    U_Type(line[i],check_insta[0],registers)
+                elif check_insta[1]=='j':
+                    J_Type(line[i],check_insta[0],registers)
