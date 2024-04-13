@@ -283,6 +283,7 @@ def I_Type(line, instruction, registers):
         registers[detectregister(rd)][2] = mem[registers[detectregister(rs1)][2] + binary_to_decimal(imm)]
         program_line += 1
     elif instruction == "jalr":
+        registers[5] = (program_line + 1)*4
         registers[detectregister(rd)][2] = (program_line+1)*4
         program_line = registers[detectregister(rs1)][2] + binary_to_decimal(imm)/4 - 1      
 
@@ -310,7 +311,7 @@ def B_Type(line , instruction, registers):
     imm = reverse(reverse(imm[8:12]) + reverse(imm[1:7]) + imm[-1] + imm[0])
     immval = binary_to_decimal(imm)
     immval /= 4
-
+    registers[5] = (program_line + 1)*4
     imm = str(line[-32])+str(line[-8])+str(line[-31:-25])+str(line[-12:-8])
     if instruction == "beq":
         if registers[detectregister(rs1)][2] == registers[detectregister(rs2)][2]:
@@ -330,7 +331,6 @@ def B_Type(line , instruction, registers):
     if instruction == "bgeu":
         if binary_to_decimal(registers[detectregister(rs1)][2], "unsigned") >= binary_to_decimal(registers[detectregister(rs2)][2], "unsigned"):
             program_line = program_line + immval - 1
-        
 def bonus(line, instruction, registers):
     global program_line
     if instruction == "rst":
