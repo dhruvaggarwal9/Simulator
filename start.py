@@ -262,7 +262,7 @@ def J_Type(line , instruction, registers):
     imm = reverse(imm)
     immval = binary_to_decimal(imm)/4
     if instruction == "jal":
-        registers[detectregister(rd)][2] = program_line + 1 # (storing address of next instruction as return address in rd)
+        registers[detectregister(rd)][2] = (program_line + 1)*4 # (storing address of next instruction as return address in rd)
         program_line = program_line + immval - 1
         # PC = PC + sext({imm+'0'} (updating PC to label)    
 def I_Type(line, instruction, registers):
@@ -283,7 +283,7 @@ def I_Type(line, instruction, registers):
         registers[detectregister(rd)][2] = mem[registers[detectregister(rs1)][2] + binary_to_decimal(imm)]
         program_line += 1
     elif instruction == "jalr":
-        registers[detectregister(rd)][2] = program_line+1
+        registers[detectregister(rd)][2] = (program_line+1)*4
         program_line = registers[detectregister(rs1)][2] + binary_to_decimal(imm)/4 - 1      
 
 
@@ -291,7 +291,7 @@ def U_Type(line , instruction, registers):
     global program_line
     rd = line[-12:-7]
     if instruction=="auipc":
-        registers[detectregister(rd)][2] = detectregister(line[:-12]+'000000000000') + program_line
+        registers[detectregister(rd)][2] = detectregister(line[:-12]+'000000000000') + program_line*4
     if instruction=="lui":
         registers[detectregister(rd)][2] = detectregister(line[:-12]+'000000000000')
     program_line += 1
