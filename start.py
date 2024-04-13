@@ -10,6 +10,29 @@ def sign_extend(bits, size, type_of_bit = "signed"):
         return bits[0]*(size-len(bits)) + bits
     return bits
 
+def decimal_to_binary(decimal, num_bits = 32, type_of_bit = "signed"):
+    if type_of_bit == "unsigned":
+        binary = bin(decimal)[2:].zfill(num_bits)
+        return binary
+    if type_of_bit in ("signed", "1s"):
+        if decimal >= 0:
+            binary = decimal_to_binary(decimal, num_bits, "unsigned")
+        else:
+            binary = decimal_to_binary(abs(decimal), num_bits-1, "unsigned")
+            binary = "1" + binary
+        return binary
+    if decimal >= 0:
+        binary = bin(decimal)[2:].zfill(num_bits)
+    else:
+        positive_binary = bin(abs(decimal))[2:].zfill(num_bits)
+        positive_binary = positive_binary.replace("0","2")
+        positive_binary = positive_binary.replace("1","0")
+        positive_binary = positive_binary.replace("2","1")
+        inverted_binary = positive_binary
+        invertedvalue = binary_to_decimal(inverted_binary, "unsigned")
+        binary = decimal_to_binary(invertedvalue + 1, num_bits, "unsigned")
+    return binary
+
 def binary_to_decimal(binary, type_of_bit = "signed"):
     sum = 0
     if type_of_bit == "unsigned":
@@ -130,45 +153,48 @@ def decimal_to_two_unsigned_to_decimal(decimal):
 
 
 def R_Type(line , instruction, registers):
-     rd = line[-12:-7]
-     rs1 = line[-20:-15]
-     rs2 = line[-25,-20]
-     if instruction == "add":
-         registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] + registers[detectregister[rs2]][2] #sext
-     if instruction == "sub":
-         registers[detectregister(rd)][2] = 0 - registers[detectregister[rs2]][2]
-     if instruction == "sll":
-         value = registers[detectregister[rs2]][2]
-         if value < 0:
+    global program_line
+    rd = line[-12:-7]
+    rs1 = line[-20:-15]
+    rs2 = line[-25,-20]
+    if instruction == "add":
+        registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] + registers[detectregister[rs2]][2] #sext
+    if instruction == "sub":
+        registers[detectregister(rd)][2] = 0 - registers[detectregister[rs2]][2]
+    if instruction == "sll":
+        value = registers[detectregister[rs2]][2]
+        if value < 0:
             binary_value = bin(value & 0xFFFFFFFF)[2:] 
-         else:
+        else:
             binary_value = bin(value)[2:].zfill(32)
-         x = binary_value [-5:]
-         y = int(x, 2)
-         result = registers[detectregister[rs1]][2] << y
-         registers[detectregister[rs1]][2] = result
-     if instruction == "srl":
-         value = registers[detectregister[rs2]][2]
-         if value < 0:
+        x = binary_value [-5:]
+        y = int(x, 2)
+        result = registers[detectregister[rs1]][2] << y
+        registers[detectregister[rs1]][2] = result
+    if instruction == "srl":
+        value = registers[detectregister[rs2]][2]
+        if value < 0:
             binary_value = bin(value & 0xFFFFFFFF)[2:] 
-         else:
+        else:
             binary_value = bin(value)[2:].zfill(32)
-         x = binary_value [-5:]
-         y = int(x, 2)
-         result = registers[detectregister[rs1]][2] >> y
-         registers[detectregister[rs1]][2] = result
-     if instruction == "slt":
-         if registers[detectregister[rs1]][2] < registers[detectregister[rs2]][2]: #sext
-             registers[detectregister[rd]][2] =1
-     if instruction == "sltu":
-         if decimal_to_two_unsigned_to_decimal(registers[detectregister[rs1]][2]) < decimal_to_two_unsigned_to_decimal(registers[detectregister[rs2]][2]):
-             registers[detectregister[rd]][2] =1
-     if instruction == "xor" :
-         registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] ^registers[detectregister[rs2]][2]
-     if instruction == "or" :
-         registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] | registers[detectregister[rs2]][2]
-     if instruction == "and" :
-         registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] & registers[detectregister[rs2]][2]
+        x = binary_value [-5:]
+        y = int(x, 2)
+        result = registers[detectregister[rs1]][2] >> y
+        registers[detectregister[rs1]][2] = result
+    if instruction == "slt":
+        if registers[detectregister[rs1]][2] < registers[detectregister[rs2]][2]: #sext
+            registers[detectregister[rd]][2] =1
+    if instruction == "sltu":
+        if decimal_to_two_unsigned_to_decimal(registers[detectregister[rs1]][2]) < decimal_to_two_unsigned_to_decimal(registers[detectregister[rs2]][2]):
+            registers[detectregister[rd]][2] =1
+    if instruction == "xor" :
+        registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] ^registers[detectregister[rs2]][2]
+    if instruction == "or" :
+        registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] | registers[detectregister[rs2]][2]
+    if instruction == "and" :
+        registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] & registers[detectregister[rs2]][2]
+    program_line += 1
+    
 mem={
     "0x00010000":"0b00000000000000000000000000000000",
     "0x00010004":"0b00000000000000000000000000000000",
@@ -217,55 +243,129 @@ def decimal_to_hexadecimal(decimal):
     return hexadecimal
 
 def S_Type(line , instruction, registers):
+    global program_line
     if instruction == "sw":
         rs2 = line[-25,-20]
         rs1 = line[-20:-15]
         imm = str(line[-32:-25])+str(line[-12:-7])
         registers[detectregister(rs2)][2] = twos_complement_to_decimal(str((mem[f"0x000{str(decimal_to_hexadecimal(65536+4*(registers[detectregister(rs1)][2]+twos_complement_to_decimal(str(imm)))))}"])[-32:]))
+        program_line += 1
 
 def output_mem(mem):
     for i in range (32):
         print(f'0x000{str(decimal_to_hexadecimal(65536+(4*i)))}:{mem[f"0x000{str(decimal_to_hexadecimal(65536+(4*i)))}"]}')
-output_mem(mem)
 
 def J_Type(line , instruction, registers):
+    global program_line
     rd = line[-12:-7]
-    imm=str(line[-32])+str(line[-20:-12])+str(line[-21])+str(line[-31:-21])
+    imm = reverse(str(line[1:11]))+str(line[11])+reverse(str(line[12:20]))+str(line[0])
+    imm = reverse(imm)
+    immval = binary_to_decimal(imm)/4
     if instruction == "jal":
-        registers[detectregister(rd)][2] = program_line+1 # (storing address of next instruction as return address in rd)
+        registers[detectregister(rd)][2] = program_line + 1 # (storing address of next instruction as return address in rd)
+        program_line = program_line + immval - 1
         # PC = PC + sext({imm+'0'} (updating PC to label)    
 def I_Type(line, instruction, registers):
+    global program_line
     imm = line[0:12]
     rs1 = line[12:17]
     rd = line[20:25]
     if instruction == "addi":
         registers[detectregister(rd)][2] = registers[detectregister(rs1)][2] + binary_to_decimal(imm)
+        program_line += 1
     elif instruction == "sltiu":
         if binary_to_decimal(registers[detectregister(rs1)][2], "unsigned") < binary_to_decimal(imm, "unsigned"):
             registers[detectregister(rd)][2] = 1
         else:
             registers[detectregister(rd)][2] = 0
+        program_line += 1
     elif instruction == "lw":
         registers[detectregister(rd)][2] = mem[registers[detectregister(rs1)][2] + binary_to_decimal(imm)]
+        program_line += 1
     elif instruction == "jalr":
         registers[detectregister(rd)][2] = program_line+1
-        program_line = registers[detectregister(rs1)][2] + binary_to_decimal(imm)      # Possible Error
+        program_line = registers[detectregister(rs1)][2] + binary_to_decimal(imm)/4 - 1      
+
 
 def U_Type(line , instruction, registers):
+    global program_line
     rd = line[-12:-7]
     if instruction=="auipc":
-        registers[detectregister(rd)][2] = detectregister(line[:-12]+'000000000000') # + PC
+        registers[detectregister(rd)][2] = detectregister(line[:-12]+'000000000000') + program_line
     if instruction=="lui":
         registers[detectregister(rd)][2] = detectregister(line[:-12]+'000000000000')
+    program_line += 1
+
+
+def reverse(string):
+    string = string[::-1]
+    return string
+def B_Type(line , instruction, registers):
+    global program_line
+    rs1 = line[-20:-15]
+    rs2 = line[-25,-20]
+    immv2 = line[0:7]
+    immv1 = line[20:25]
+    imm = immv1+immv2
+    imm = reverse(reverse(imm[8:12]) + reverse(imm[1:7]) + imm[-1] + imm[0])
+    immval = binary_to_decimal(imm)
+    immval /= 4
+
+    imm = str(line[-32])+str(line[-8])+str(line[-31:-25])+str(line[-12:-8])
+    if instruction == "beq":
+        if registers[detectregister(rs1)][2] == registers[detectregister(rs2)][2]:
+            program_line = program_line + immval - 1
+    if instruction == "bne":
+        if registers[detectregister(rs1)][2] != registers[detectregister(rs2)][2]:
+            program_line = program_line + immval - 1
+    if instruction == "blt":
+        if registers[detectregister(rs1)][2] < registers[detectregister(rs2)][2]:
+            program_line = program_line + immval - 1
+    if instruction == "bge":
+        if registers[detectregister(rs1)][2] >= registers[detectregister(rs2)][2]:
+            program_line = program_line + immval - 1
+    if instruction == "bltu":
+        if binary_to_decimal(registers[detectregister(rs1)][2], "unsigned") < binary_to_decimal(registers[detectregister(rs2)][2], "unsigned"):
+            program_line = program_line + immval - 1
+    if instruction == "bgeu":
+        if binary_to_decimal(registers[detectregister(rs1)][2], "unsigned") >= binary_to_decimal(registers[detectregister(rs2)][2], "unsigned"):
+            program_line = program_line + immval - 1
         
+def bonus(line, instruction, registers):
+    global program_line
+    if instruction == "rst":
+        for i in range(32):
+            registers[i][2] = 0
+        program_line += 1
+    if instruction == "halt":
+        exit()
+    if instruction == "rvrs":
+        rd = line[-12:-7]
+        rs1 = line[-20:-15]
+        registers[detectregister(rd)][2] = decimal_to_binary(detectregister(rs1), 32, "unsigned")
+        program_line += 1
+    if instruction == "mul":
+        rs2 = line[7:12]
+        rs1 = line[12:17]
+        rd = line[20:25]
+        registers[detectregister(rd)][2] = registers[detectregister(rs1)][2] * registers[detectregister(rs2)][2]
+        program_line += 1
+
+
 def input():
     with open("File1.txt","r") as f:
             data=f.read()
             line=data.split('\n')
-            for i in range(len(line)):
+            program_line = 1
+            while (program_line < len(line)):
+                i = program_line
                 check_insta = check_inst(line)
-                if check_insta[1]=='bonus':
+                if check_insta[i]=='bonus':
                     bonus(line[i],check_insta[0],registers)
+                    if check_insta[0]=='rst':
+                        pass
+                    elif check_insta[0]=='halt':
+                        break
                 elif check_insta[1]=='r':
                     R_Type(line[i],check_insta[0],registers)
                 elif check_insta[1]=='i':
