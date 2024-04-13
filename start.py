@@ -232,8 +232,24 @@ def J_Type(line , instruction, registers):
     rd = line[-12:-7]
     imm=str(line[-32])+str(line[-20:-12])+str(line[-21])+str(line[-31:-21])
     if instruction == "jal":
-        registers[detectregister(rd)][2] = # PC+4 (storing address of next instruction as return address in rd)
+        registers[detectregister(rd)][2] = program_line+1 # (storing address of next instruction as return address in rd)
         # PC = PC + sext({imm+'0'} (updating PC to label)    
+def I_Type(line, instruction, registers):
+    imm = line[0:12]
+    rs1 = line[12:17]
+    rd = line[20:25]
+    if instruction == "addi":
+        registers[detectregister(rd)][2] = registers[detectregister(rs1)][2] + binary_to_decimal(imm)
+    elif instruction == "sltiu":
+        if binary_to_decimal(registers[detectregister(rs1)][2], "unsigned") < binary_to_decimal(imm, "unsigned"):
+            registers[detectregister(rd)][2] = 1
+        else:
+            registers[detectregister(rd)][2] = 0
+    elif instruction == "lw":
+        registers[detectregister(rd)][2] = mem[registers[detectregister(rs1)][2] + binary_to_decimal(imm)]
+    elif instruction == "jalr":
+        registers[detectregister(rd)][2] = program_line+1
+        program_line = registers[detectregister(rs1)][2] + binary_to_decimal(imm)      # Possible Error
 
 def U_Type(line , instruction, registers):
     rd = line[-12:-7]
