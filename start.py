@@ -342,13 +342,14 @@ def bonus(line, instruction, registers):
     if instruction == "rvrs":
         rd = line[-12:-7]
         rs1 = line[-20:-15]
-        registers[detectregister(rd)][2] = decimal_to_binary(detectregister(rs1), 32, "unsigned")
+        registers[detectregister(rd)][2] = decimal_to_binary(reverse(detectregister(rs1)), 32, "unsigned")
         program_line += 1
     if instruction == "mul":
         rs2 = line[7:12]
         rs1 = line[12:17]
         rd = line[20:25]
-        registers[detectregister(rd)][2] = registers[detectregister(rs1)][2] * registers[detectregister(rs2)][2]
+        if registers[detectregister(rs1)][2]*registers[detectregister(rs2)][2] < 2**(32):
+            registers[detectregister(rd)][2] = registers[detectregister(rs1)][2]*registers[detectregister(rs2)][2]
         program_line += 1
 
 
