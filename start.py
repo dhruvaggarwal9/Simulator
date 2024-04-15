@@ -185,7 +185,7 @@ def R_Type(line , instruction, registers):
         if registers[detectregister(rs1)][2] < registers[detectregister(rs2)][2]: #sext
             registers[detectregister(rd)][2] =1
     if instruction == "sltu":
-        if decimal_to_two_unsigned_to_decimal(registers[detectregister(rs1)][2]) < decimal_to_two_unsigned_to_decimal(registers[detectregister[rs2]][2]):
+        if decimal_to_two_unsigned_to_decimal(registers[detectregister(rs1)][2]) < decimal_to_two_unsigned_to_decimal(registersdetectregister(rs2)][2]):
             registers[detectregister(rd)][2] =1
     if instruction == "xor" :
         registers[detectregister(rd)][2] = registers[detectregister(rs1)][2] ^registers[detectregister(rs2)][2]
