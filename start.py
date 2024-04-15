@@ -158,41 +158,41 @@ def R_Type(line , instruction, registers):
     rs1 = line[-20:-15]
     rs2 = line[-25,-20]
     if instruction == "add":
-        registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] + registers[detectregister[rs2]][2] #sext
+        registers[detectregister(rd)][2] = registers[detectregister(rs1)][2] + registers[detectregister(rs2)][2] #sext
     if instruction == "sub":
-        registers[detectregister(rd)][2] = 0 - registers[detectregister[rs2]][2]
+        registers[detectregister(rd)][2] = 0 - registers[detectregister(rs2)][2]
     if instruction == "sll":
-        value = registers[detectregister[rs2]][2]
+        value = registers[detectregister(rs2)][2]
         if value < 0:
             binary_value = bin(value & 0xFFFFFFFF)[2:] 
         else:
             binary_value = bin(value)[2:].zfill(32)
         x = binary_value [-5:]
         y = int(x, 2)
-        result = registers[detectregister[rs1]][2] << y
-        registers[detectregister[rs1]][2] = result
+        result = registers[detectregister(rs1)][2] << y
+        registers[detectregister(rs1)][2] = result
     if instruction == "srl":
-        value = registers[detectregister[rs2]][2]
+        value = registers[detectregister(rs2)][2]
         if value < 0:
             binary_value = bin(value & 0xFFFFFFFF)[2:] 
         else:
             binary_value = bin(value)[2:].zfill(32)
         x = binary_value [-5:]
         y = int(x, 2)
-        result = registers[detectregister[rs1]][2] >> y
-        registers[detectregister[rs1]][2] = result
+        result = registers[detectregister(rs1)][2] >> y
+        registers[detectregister(rs1)][2] = result
     if instruction == "slt":
-        if registers[detectregister[rs1]][2] < registers[detectregister[rs2]][2]: #sext
-            registers[detectregister[rd]][2] =1
+        if registers[detectregister(rs1)][2] < registers[detectregister(rs2)][2]: #sext
+            registers[detectregister(rd)][2] =1
     if instruction == "sltu":
-        if decimal_to_two_unsigned_to_decimal(registers[detectregister[rs1]][2]) < decimal_to_two_unsigned_to_decimal(registers[detectregister[rs2]][2]):
-            registers[detectregister[rd]][2] =1
+        if decimal_to_two_unsigned_to_decimal(registers[detectregister(rs1)][2]) < decimal_to_two_unsigned_to_decimal(registers[detectregister[rs2]][2]):
+            registers[detectregister(rd)][2] =1
     if instruction == "xor" :
-        registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] ^registers[detectregister[rs2]][2]
-    if instruction == "or" :
-        registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] | registers[detectregister[rs2]][2]
+        registers[detectregister(rd)][2] = registers[detectregister(rs1)][2] ^registers[detectregister(rs2)][2]
+    if instruction == "or" 
+        registers[detectregister(rd)][2] = registers[detectregister(rs1)][2] | registers[detectregister(rs2)][2]
     if instruction == "and" :
-        registers[detectregister(rd)][2] = registers[detectregister[rs1]][2] & registers[detectregister[rs2]][2]
+        registers[detectregister(rd)][2] = registers[detectregister(rs1)][2] & registers[detectregister(rs2)][2]
     program_line += 1
     
 mem={
