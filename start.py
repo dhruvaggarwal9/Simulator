@@ -160,7 +160,7 @@ def R_Type(line , instruction, registers):
     if instruction == "add":
         registers[detectregister(rd)][2] = registers[detectregister(rs1)][2] + registers[detectregister(rs2)][2] #sext
     if instruction == "sub":
-        registers[detectregister(rd)][2] = 0 - registers[detectregister(rs2)][2]
+        registers[detectregister(rd)][2] = registers[detectregister(rs1)][2] - registers[detectregister(rs2)][2]
     if instruction == "sll":
         value = registers[detectregister(rs2)][2]
         if value < 0:
@@ -379,3 +379,5 @@ def input():
                     U_Type(line[i],check_insta[0],registers)
                 elif check_insta[1]=='j':
                     J_Type(line[i],check_insta[0],registers)
+                output(registers)
+    
