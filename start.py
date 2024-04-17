@@ -205,13 +205,13 @@ def R_Type(line , instruction, registers):
     if instruction == "sll":
         value = registers[detectregister(rs2)][2]
         if value < 0:
-            binary_value = bin(value & 0xFFFFFFFF)[2:]
+            binary_value = bin(value & 0xFFFFFFFF)[2:] 
         else:
             binary_value = bin(value)[2:].zfill(32)
-        x = binary_value[-5:]
+        x = binary_value [-5:]
         y = int(x, 2)
-        result = registers[detectregister(rs1)][2] << y
-        registers[detectregister(rd)][2] = result
+        result = binary_to_decimal(decimal_to_binary(registers[detectregister(rs1)][2])[y:]+'0'*y,type_of_bit='2s')
+        registers[detectregister(rs1)][2] = result
     if instruction == "srl":
         value = registers[detectregister(rs2)][2]
         if value < 0:
@@ -220,8 +220,8 @@ def R_Type(line , instruction, registers):
             binary_value = bin(value)[2:].zfill(32)
         x = binary_value [-5:]
         y = int(x, 2)
-        result = registers[detectregister(rs1)][2] >> y
-        registers[detectregister(rd)][2] = result
+        result = binary_to_decimal('0'*y+decimal_to_binary(registers[detectregister(rs1)][2])[:32-y])
+        registers[detectregister(rs1)][2] = result
     if instruction == "slt":
         if registers[detectregister(rs1)][2] < registers[detectregister(rs2)][2]: #sext
             registers[detectregister(rd)][2] =1
