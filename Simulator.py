@@ -424,7 +424,6 @@ def input1():
     line=data.split("\n")
     if line[-1] == "":
         line.remove('')
-    line.append("00000000000000000000000001100011")
     program_line = 0
     while (program_line <= len(line)):
         program_line = int(program_line)
